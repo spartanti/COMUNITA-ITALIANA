@@ -5,6 +5,18 @@ import { ptBR } from "date-fns/locale";
 import { Users, Building2, Newspaper, BookOpen, ChevronRight, Calendar } from "lucide-react";
 import { siteData } from "@/data/siteData";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { api, type Banner } from "@/lib/api";
+
+const DEFAULT_BANNER = {
+  title: "Comunità Italiana do Espírito Santo",
+  subtitle: "Preservando nossa história, fortalecendo nossas raízes.",
+  imageUrl: "https://comunitaes.org.br/wp-content/uploads/2020/12/Buenos_Aires_Guarapari_2019.jpg",
+  ctaPrimaryText: "Conheça a Associação",
+  ctaPrimaryUrl: "/quem-somos",
+  ctaSecondaryText: "Associe-se",
+  ctaSecondaryUrl: "/contato",
+};
 
 const features = [
   {
@@ -35,17 +47,26 @@ const features = [
 
 export default function Home() {
   const recentPosts = siteData.posts.slice(0, 6);
+  const [banner, setBanner] = useState<Banner | null>(null);
+
+  useEffect(() => {
+    api.banners.active()
+      .then((b) => { if (b) setBanner(b); })
+      .catch(() => {});
+  }, []);
+
+  const hero = banner ?? DEFAULT_BANNER;
 
   return (
     <div className="w-full">
       {/* Hero Section */}
       <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('https://comunitaes.org.br/wp-content/uploads/2020/12/Buenos_Aires_Guarapari_2019.jpg')" }}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
+          style={{ backgroundImage: `url('${hero.imageUrl}')` }}
         />
         <div className="absolute inset-0 bg-primary/70" />
-        
+
         <div className="relative z-10 container mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -54,17 +75,19 @@ export default function Home() {
             className="max-w-4xl mx-auto"
           >
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-serif text-white mb-6 drop-shadow-lg">
-              Comunità Italiana do Espírito Santo
+              {hero.title}
             </h1>
-            <p className="text-xl md:text-2xl text-gray-100 mb-10 font-light drop-shadow-md">
-              Preservando nossa história, fortalecendo nossas raízes.
-            </p>
+            {hero.subtitle && (
+              <p className="text-xl md:text-2xl text-gray-100 mb-10 font-light drop-shadow-md">
+                {hero.subtitle}
+              </p>
+            )}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-primary font-bold text-lg px-8 py-6 rounded-full border-none shadow-xl">
-                <Link href="/quem-somos">Conheça a Associação</Link>
+                <Link href={hero.ctaPrimaryUrl}>{hero.ctaPrimaryText}</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary font-bold text-lg px-8 py-6 rounded-full">
-                <Link href="/contato">Associe-se</Link>
+                <Link href={hero.ctaSecondaryUrl}>{hero.ctaSecondaryText}</Link>
               </Button>
             </div>
           </motion.div>
@@ -179,7 +202,7 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
-          
+
           <div className="mt-10 text-center md:hidden">
             <Button asChild variant="outline" className="w-full">
               <Link href="/noticias">Ver todas as notícias</Link>

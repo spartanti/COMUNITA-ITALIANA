@@ -1,10 +1,13 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 import { Layout } from "@/components/layout/Layout";
+import { AdminProvider, useAdmin } from "@/contexts/AdminContext";
+import { SEOProvider } from "@/components/SEO";
+
 import Home from "@/pages/Home";
 import QuemSomos from "@/pages/QuemSomos";
 import Historia from "@/pages/Historia";
@@ -15,24 +18,45 @@ import Diretoria from "@/pages/Diretoria";
 import Estatuto from "@/pages/Estatuto";
 import Contato from "@/pages/Contato";
 
+import AdminLogin from "@/pages/admin/AdminLogin";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminPosts from "@/pages/admin/AdminPosts";
+import AdminPostEdit from "@/pages/admin/AdminPostEdit";
+import AdminBanners from "@/pages/admin/AdminBanners";
+import AdminSettings from "@/pages/admin/AdminSettings";
+
 const queryClient = new QueryClient();
+
+function ProtectedAdminRoute({ component: Component }: { component: React.ComponentType }) {
+  const { isAuthenticated } = useAdmin();
+  if (!isAuthenticated) return <Redirect to="/admin/login" />;
+  return <Component />;
+}
 
 function Router() {
   return (
-    <Layout>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/quem-somos" component={QuemSomos} />
-        <Route path="/historia" component={Historia} />
-        <Route path="/noticias" component={Noticias} />
-        <Route path="/noticias/:slug" component={PostDetail} />
-        <Route path="/transparencia" component={Transparencia} />
-        <Route path="/diretoria" component={Diretoria} />
-        <Route path="/estatuto" component={Estatuto} />
-        <Route path="/contato" component={Contato} />
-        <Route component={NotFound} />
-      </Switch>
-    </Layout>
+    <Switch>
+      {/* Public site routes */}
+      <Route path="/" component={() => <Layout><Home /></Layout>} />
+      <Route path="/quem-somos" component={() => <Layout><QuemSomos /></Layout>} />
+      <Route path="/historia" component={() => <Layout><Historia /></Layout>} />
+      <Route path="/noticias" component={() => <Layout><Noticias /></Layout>} />
+      <Route path="/noticias/:slug" component={() => <Layout><PostDetail /></Layout>} />
+      <Route path="/transparencia" component={() => <Layout><Transparencia /></Layout>} />
+      <Route path="/diretoria" component={() => <Layout><Diretoria /></Layout>} />
+      <Route path="/estatuto" component={() => <Layout><Estatuto /></Layout>} />
+      <Route path="/contato" component={() => <Layout><Contato /></Layout>} />
+
+      {/* Admin routes */}
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin" component={() => <ProtectedAdminRoute component={AdminDashboard} />} />
+      <Route path="/admin/posts" component={() => <ProtectedAdminRoute component={AdminPosts} />} />
+      <Route path="/admin/posts/:id" component={() => <ProtectedAdminRoute component={AdminPostEdit} />} />
+      <Route path="/admin/banners" component={() => <ProtectedAdminRoute component={AdminBanners} />} />
+      <Route path="/admin/settings" component={() => <ProtectedAdminRoute component={AdminSettings} />} />
+
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
@@ -40,10 +64,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
-        </WouterRouter>
-        <Toaster />
+        <AdminProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <SEOProvider />
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </AdminProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
