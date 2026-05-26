@@ -12,6 +12,7 @@ type Associate = {
   cpf: string;
   cep: string;
   logradouro: string;
+  numero: string;
   bairro: string;
   cidade: string;
   estado: string;
@@ -69,6 +70,7 @@ export default function AdminAssociates() {
         formatWhatsapp(a.whatsapp),
         a.cep,
         `"${a.logradouro}"`,
+        `"${a.numero}"`,
         `"${a.bairro}"`,
         a.cidade,
         a.estado,
@@ -213,7 +215,7 @@ export default function AdminAssociates() {
                   <div className="py-3">
                     <span className="text-gray-500 font-medium block mb-1">Endereço</span>
                     <p className="text-gray-800 leading-relaxed">
-                      {selected.logradouro}{selected.complemento ? `, ${selected.complemento}` : ""}<br />
+                      {selected.logradouro}{selected.numero ? `, ${selected.numero}` : ""}{selected.complemento ? ` — ${selected.complemento}` : ""}<br />
                       {selected.bairro}{selected.bairro ? " — " : ""}{selected.cidade}/{selected.estado}<br />
                       CEP: {selected.cep.replace(/(\d{5})(\d{3})/, "$1-$2")}
                     </p>

@@ -41,6 +41,7 @@ export default function AssociarSe() {
     nomeCompleto: "",
     cpf: "",
     cep: "",
+    numero: "",
     complemento: "",
     whatsapp: "",
     email: "",
@@ -107,6 +108,7 @@ export default function AssociarSe() {
           cpf: form.cpf,
           cep: form.cep,
           logradouro: address.logradouro,
+          numero: form.numero,
           bairro: address.bairro,
           cidade: address.cidade,
           estado: address.estado,
@@ -258,25 +260,37 @@ export default function AssociarSe() {
 
             {address.cidade && (
               <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="sm:col-span-2 space-y-1">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div className="sm:col-span-3 space-y-1">
                     <Label className="text-xs text-gray-500">Logradouro</Label>
                     <Input value={address.logradouro} readOnly className="bg-gray-100 text-gray-600 cursor-default" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-xs text-gray-500">Bairro</Label>
-                    <Input value={address.bairro} readOnly className="bg-gray-100 text-gray-600 cursor-default" />
+                    <Label htmlFor="numero" className="text-xs text-gray-500">Número *</Label>
+                    <Input
+                      id="numero"
+                      value={form.numero}
+                      onChange={(e) => setForm((p) => ({ ...p, numero: e.target.value }))}
+                      placeholder="Ex: 123"
+                      required
+                      inputMode="numeric"
+                      className="bg-gray-50"
+                    />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-gray-500">Cidade</Label>
-                    <Input value={address.cidade} readOnly className="bg-gray-100 text-gray-600 cursor-default" />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2 space-y-1">
+                    <Label className="text-xs text-gray-500">Bairro</Label>
+                    <Input value={address.bairro} readOnly className="bg-gray-100 text-gray-600 cursor-default" />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-gray-500">Estado</Label>
                     <Input value={address.estado} readOnly className="bg-gray-100 text-gray-600 cursor-default" />
                   </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500">Cidade</Label>
+                  <Input value={address.cidade} readOnly className="bg-gray-100 text-gray-600 cursor-default" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="complemento">Complemento <span className="text-gray-400 font-normal">(apto, bloco...)</span></Label>

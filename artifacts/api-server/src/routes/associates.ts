@@ -11,11 +11,12 @@ function formatCpf(cpf: string): string {
 }
 
 router.post("/associates", async (req, res): Promise<void> => {
-  const { nomeCompleto, cpf, cep, logradouro, bairro, cidade, estado, complemento, whatsapp, email } = req.body as {
+  const { nomeCompleto, cpf, cep, logradouro, numero, bairro, cidade, estado, complemento, whatsapp, email } = req.body as {
     nomeCompleto?: string;
     cpf?: string;
     cep?: string;
     logradouro?: string;
+    numero?: string;
     bairro?: string;
     cidade?: string;
     estado?: string;
@@ -53,6 +54,7 @@ router.post("/associates", async (req, res): Promise<void> => {
       cpf: cpfClean,
       cep: cep.replace(/\D/g, ""),
       logradouro: logradouro ?? "",
+      numero: numero ?? "",
       bairro: bairro ?? "",
       cidade: cidade ?? "",
       estado: estado ?? "",

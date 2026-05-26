@@ -8,6 +8,7 @@ export const associatesTable = pgTable("associates", {
   cpf: text("cpf").notNull(),
   cep: text("cep").notNull(),
   logradouro: text("logradouro").notNull().default(""),
+  numero: text("numero").notNull().default(""),
   bairro: text("bairro").notNull().default(""),
   cidade: text("cidade").notNull().default(""),
   estado: text("estado").notNull().default(""),
