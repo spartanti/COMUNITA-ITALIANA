@@ -114,12 +114,12 @@ export default function AdminSettings() {
               <h3 className="font-bold text-primary text-lg font-serif">{group}</h3>
             </div>
 
-            {items.map(({ key, label, placeholder, description, isPassword }) => (
+            {items.map(({ key, label, placeholder, description, ...rest }) => (
               <div key={key} className="space-y-2">
                 <Label htmlFor={key}>{label}</Label>
                 <Input
                   id={key}
-                  type={isPassword ? "password" : "text"}
+                  type={"isPassword" in rest && rest.isPassword ? "password" : "text"}
                   value={values[key] ?? ""}
                   onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
                   placeholder={placeholder}
