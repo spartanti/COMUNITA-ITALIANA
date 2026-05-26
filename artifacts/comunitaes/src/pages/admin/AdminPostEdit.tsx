@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useParams } from "wouter";
 import { Save, ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -139,11 +140,13 @@ export default function AdminPostEdit() {
             </div>
 
             <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="imageUrl">URL da Imagem de Capa</Label>
-              <Input id="imageUrl" value={form.imageUrl} onChange={set("imageUrl")} placeholder="https://..." />
-              {form.imageUrl && (
-                <img src={form.imageUrl} alt="Preview" className="mt-2 h-32 w-auto rounded-lg object-cover border" onError={(e) => (e.currentTarget.style.display = "none")} />
-              )}
+              <Label>Imagem de Capa</Label>
+              <ImageUpload
+                value={form.imageUrl}
+                onChange={(url) => setForm((prev) => ({ ...prev, imageUrl: url }))}
+                aspectLabel="1200 × 630 px (proporção 16:9)"
+                hint="Aparece no topo da notícia e no card da listagem. Prefira imagens horizontais."
+              />
             </div>
 
             <div className="md:col-span-2 space-y-2">

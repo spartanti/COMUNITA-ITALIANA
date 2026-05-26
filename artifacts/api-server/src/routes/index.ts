@@ -5,6 +5,7 @@ import postsRouter from "./posts";
 import bannersRouter from "./banners";
 import settingsRouter from "./settings";
 import associatesRouter from "./associates";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(postsRouter);
 router.use(bannersRouter);
 router.use(settingsRouter);
 router.use(associatesRouter);
+router.use(storageRouter);
 
 export default router;

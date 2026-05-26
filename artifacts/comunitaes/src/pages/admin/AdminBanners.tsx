@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, CheckCircle, Circle, Save, X } from "lucide-react";
+import { Plus, Pencil, Trash2, CheckCircle, Save, X } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -126,11 +127,13 @@ export default function AdminBanners() {
           <Input value={form.subtitle} onChange={set("subtitle")} placeholder="Ex: Preservando nossa história..." />
         </div>
         <div className="md:col-span-2 space-y-2">
-          <Label>URL da Imagem de Fundo *</Label>
-          <Input value={form.imageUrl} onChange={set("imageUrl")} placeholder="https://..." />
-          {form.imageUrl && (
-            <img src={form.imageUrl} alt="Preview" className="h-32 w-full rounded-lg object-cover border mt-2" onError={(e) => (e.currentTarget.style.display = "none")} />
-          )}
+          <Label>Imagem de Fundo *</Label>
+          <ImageUpload
+            value={form.imageUrl}
+            onChange={(url) => setForm((prev) => ({ ...prev, imageUrl: url }))}
+            aspectLabel="1920 × 600 px (proporção 16:5)"
+            hint="Imagem exibida como fundo do banner na página inicial. Prefira fotos largas e horizontais."
+          />
         </div>
         <div className="space-y-2">
           <Label>Texto do Botão Principal</Label>
