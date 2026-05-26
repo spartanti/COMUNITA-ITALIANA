@@ -26,11 +26,13 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       {/* Sidebar */}
       <aside className="w-64 bg-primary text-white flex flex-col shrink-0">
         <div className="p-6 border-b border-white/10">
-          <img
-            src="https://comunitaes.org.br/wp-content/uploads/2020/08/cropped-Logo_Comunita%CC%80_01_fundo_escuro.png"
-            alt="Logo"
-            className="h-14 mb-2"
-          />
+          <div className="bg-white rounded-xl px-4 py-2 mb-3 inline-block">
+            <img
+              src="https://comunitaes.org.br/wp-content/uploads/2020/08/cropped-Logo_Comunita%CC%80_01_fundo_escuro.png"
+              alt="Logo"
+              className="h-10"
+            />
+          </div>
           <p className="text-white/60 text-xs font-medium uppercase tracking-wider">Painel Admin</p>
         </div>
 

@@ -41,11 +41,13 @@ export default function AdminLogin() {
       >
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           <div className="bg-primary p-8 flex flex-col items-center">
-            <img
-              src="https://comunitaes.org.br/wp-content/uploads/2020/08/cropped-Logo_Comunita%CC%80_01_fundo_escuro.png"
-              alt="Logo ComunitaES"
-              className="h-20 mb-4"
-            />
+            <div className="bg-white rounded-2xl px-6 py-3 mb-4 shadow-md">
+              <img
+                src="https://comunitaes.org.br/wp-content/uploads/2020/08/cropped-Logo_Comunita%CC%80_01_fundo_escuro.png"
+                alt="Logo ComunitaES"
+                className="h-16"
+              />
+            </div>
             <h1 className="text-white text-2xl font-bold font-serif">Painel Administrativo</h1>
             <p className="text-white/60 text-sm mt-1">ComunitaES</p>
           </div>
