@@ -87,7 +87,7 @@ export default function Home() {
                 <Link href={hero.ctaPrimaryUrl}>{hero.ctaPrimaryText}</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-primary font-bold text-lg px-8 py-6 rounded-full">
-                <Link href={hero.ctaSecondaryUrl}>{hero.ctaSecondaryText}</Link>
+                <Link href="/associar-se">{hero.ctaSecondaryText}</Link>
               </Button>
             </div>
           </motion.div>
