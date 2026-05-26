@@ -5,6 +5,7 @@ import { z } from "zod/v4";
 export const associatesTable = pgTable("associates", {
   id: serial("id").primaryKey(),
   nomeCompleto: text("nome_completo").notNull(),
+  dataNascimento: text("data_nascimento").notNull().default(""),
   cpf: text("cpf").notNull(),
   cep: text("cep").notNull(),
   logradouro: text("logradouro").notNull().default(""),

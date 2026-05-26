@@ -39,6 +39,7 @@ export default function AssociarSe() {
   const { toast } = useToast();
   const [form, setForm] = useState({
     nomeCompleto: "",
+    dataNascimento: "",
     cpf: "",
     cep: "",
     numero: "",
@@ -105,6 +106,7 @@ export default function AssociarSe() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nomeCompleto: form.nomeCompleto,
+          dataNascimento: form.dataNascimento,
           cpf: form.cpf,
           cep: form.cep,
           logradouro: address.logradouro,
@@ -200,6 +202,19 @@ export default function AssociarSe() {
                 onChange={set("nomeCompleto")}
                 placeholder="Seu nome completo"
                 required
+                className="bg-gray-50"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="dataNascimento">Data de Nascimento *</Label>
+              <Input
+                id="dataNascimento"
+                type="date"
+                value={form.dataNascimento}
+                onChange={(e) => setForm((p) => ({ ...p, dataNascimento: e.target.value }))}
+                required
+                max={new Date().toISOString().split("T")[0]}
                 className="bg-gray-50"
               />
             </div>

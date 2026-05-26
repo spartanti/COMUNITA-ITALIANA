@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 type Associate = {
   id: number;
   nomeCompleto: string;
+  dataNascimento: string;
   cpf: string;
   cep: string;
   logradouro: string;
@@ -61,10 +62,11 @@ export default function AdminAssociates() {
   };
 
   const exportCsv = () => {
-    const header = "Nome,CPF,E-mail,WhatsApp,CEP,Logradouro,Bairro,Cidade,Estado,Complemento,Data";
+    const header = "Nome,Data Nascimento,CPF,E-mail,WhatsApp,CEP,Logradouro,Número,Bairro,Cidade,Estado,Complemento,Data Cadastro";
     const rows = associates.map((a) =>
       [
         `"${a.nomeCompleto}"`,
+        a.dataNascimento ? new Date(a.dataNascimento + "T00:00:00").toLocaleDateString("pt-BR") : "",
         formatCpf(a.cpf),
         a.email,
         formatWhatsapp(a.whatsapp),
@@ -193,6 +195,12 @@ export default function AdminAssociates() {
                 </div>
 
                 <div className="divide-y divide-gray-100 text-sm">
+                  {selected.dataNascimento && (
+                    <div className="py-3 flex justify-between">
+                      <span className="text-gray-500 font-medium">Nascimento</span>
+                      <span className="text-gray-800">{new Date(selected.dataNascimento + "T00:00:00").toLocaleDateString("pt-BR")}</span>
+                    </div>
+                  )}
                   <div className="py-3 flex justify-between">
                     <span className="text-gray-500 font-medium">CPF</span>
                     <span className="text-gray-800 font-mono">{formatCpf(selected.cpf)}</span>
