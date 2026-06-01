@@ -3,6 +3,7 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import path from "path";
 import { fileURLToPath } from "url";
+import { existsSync, mkdirSync } from "fs";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -32,6 +33,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+// Serve uploaded files from /uploads/ (persistent with Railway Volume at UPLOAD_DIR)
+const uploadDir = process.env.UPLOAD_DIR ?? path.join(process.cwd(), "uploads");
+if (!existsSync(uploadDir)) mkdirSync(uploadDir, { recursive: true });
+app.use("/uploads", express.static(uploadDir));
 
 // Serve the built React frontend — path is relative to this bundle file at runtime
 const currentDir = path.dirname(fileURLToPath(import.meta.url));

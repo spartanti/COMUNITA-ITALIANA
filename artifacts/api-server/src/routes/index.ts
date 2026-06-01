@@ -7,6 +7,7 @@ import settingsRouter from "./settings";
 import associatesRouter from "./associates";
 import storageRouter from "./storage";
 import sponsorsRouter from "./sponsors";
+import uploadRouter from "./upload";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use(settingsRouter);
 router.use(associatesRouter);
 router.use(storageRouter);
 router.use(sponsorsRouter);
+router.use(uploadRouter);
 
 export default router;
