@@ -39,7 +39,8 @@ const frontendDist = process.env.STATIC_FILES_PATH ??
   path.resolve(currentDir, "../../comunitaes/dist/public");
 
 app.use(express.static(frontendDist));
-app.get("*", (_req, res) => {
+// Express 5 requires named wildcards — use RegExp for SPA catch-all
+app.get(/.*/, (_req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
 });
 
