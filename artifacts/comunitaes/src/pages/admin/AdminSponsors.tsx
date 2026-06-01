@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { api, type Sponsor } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -129,23 +130,13 @@ export default function AdminSponsors() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="logoUrl">URL do Logo *</Label>
-                  <Input
-                    id="logoUrl"
-                    placeholder="https://exemplo.com/logo.png"
+                  <Label>Logo do patrocinador *</Label>
+                  <ImageUpload
                     value={form.logoUrl}
-                    onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
+                    onChange={(url) => setForm({ ...form, logoUrl: url })}
+                    hint="Formatos aceitos: JPG, PNG, WebP, SVG • máx. 10 MB"
+                    aspectLabel="logo transparente (ex: 300×120 px)"
                   />
-                  {form.logoUrl && (
-                    <div className="mt-2 p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center h-20">
-                      <img
-                        src={form.logoUrl}
-                        alt="Preview"
-                        className="max-h-full max-w-full object-contain"
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = ""; }}
-                      />
-                    </div>
-                  )}
                 </div>
 
                 <div className="space-y-1.5">
