@@ -1,8 +1,8 @@
 [build]
-buildCommand = "npm install -g pnpm@9 && pnpm install --frozen-lockfile && BASE_PATH=/ PORT=3000 pnpm --filter @workspace/comunitaes run build && pnpm --filter @workspace/api-server run build"
+buildCommand = "pnpm run typecheck:libs && BASE_PATH=/ PORT=3000 pnpm --filter @workspace/comunitaes run build && pnpm --filter @workspace/api-server run build"
 
 [deploy]
 startCommand = "pnpm --filter @workspace/db run push && node --enable-source-maps ./artifacts/api-server/dist/index.mjs"
-healthcheckPath = "/api/health"
+healthcheckPath = "/api/healthz"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
