@@ -97,8 +97,9 @@ export default function Home() {
   return (
     <div className="w-full">
       {/* ─── Hero Section ─────────────────────────────────────────── */}
-      <section className="relative flex items-center justify-center overflow-hidden"
-        style={{ minHeight: "calc(100svh - 88px)" }}
+      {/* Negative margin cancels the Layout pt so the hero is flush with the navbar */}
+      <section className="relative flex items-center justify-center overflow-hidden -mt-[91px] md:-mt-[99px]"
+        style={{ minHeight: "100svh" }}
       >
         {/* Background image with subtle scale */}
         <motion.div
