@@ -120,7 +120,7 @@ export default function Home() {
           <div className="flex-1 bg-[#CE2B37]" />
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 text-center py-16">
+        <div className="relative z-10 container mx-auto px-4 text-center py-28 md:py-36">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -174,19 +174,18 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Scroll indicator */}
+        {/* Scroll indicator — arrow only, no text */}
         <motion.div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/60 flex flex-col items-center gap-1"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.6 }}
         >
-          <span className="text-xs tracking-widest uppercase">Rolar</span>
           <motion.div
-            animate={{ y: [0, 6, 0] }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+            animate={{ y: [0, 7, 0] }}
+            transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
           >
-            <ArrowDown className="w-5 h-5" />
+            <ArrowDown className="w-6 h-6" />
           </motion.div>
         </motion.div>
       </section>

@@ -44,7 +44,7 @@ export function Navbar() {
       )}
     >
       {/* Italian flag strip */}
-      <div className="h-[3px] w-full flex absolute top-0 left-0">
+      <div className="h-[6px] w-full flex absolute top-0 left-0">
         <div className="flex-1 bg-[#009246]" />
         <div className="flex-1 bg-white" />
         <div className="flex-1 bg-[#CE2B37]" />
