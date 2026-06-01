@@ -6,6 +6,7 @@ import bannersRouter from "./banners";
 import settingsRouter from "./settings";
 import associatesRouter from "./associates";
 import storageRouter from "./storage";
+import sponsorsRouter from "./sponsors";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(bannersRouter);
 router.use(settingsRouter);
 router.use(associatesRouter);
 router.use(storageRouter);
+router.use(sponsorsRouter);
 
 export default router;

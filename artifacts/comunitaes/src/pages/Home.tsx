@@ -6,7 +6,7 @@ import { Users, Building2, Newspaper, BookOpen, ChevronRight, Calendar, ArrowDow
 import { siteData } from "@/data/siteData";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import { api, type Banner } from "@/lib/api";
+import { api, type Banner, type Sponsor } from "@/lib/api";
 
 const DEFAULT_BANNER = {
   title: "Comunità Italiana do Espírito Santo",
@@ -85,10 +85,14 @@ function FadeIn({
 export default function Home() {
   const recentPosts = siteData.posts.slice(0, 6);
   const [banner, setBanner] = useState<Banner | null>(null);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
 
   useEffect(() => {
     api.banners.active()
       .then((b) => { if (b) setBanner(b); })
+      .catch(() => {});
+    api.sponsors.list()
+      .then((s) => setSponsors(s))
       .catch(() => {});
   }, []);
 
@@ -211,6 +215,57 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ─── Sponsors Strip ─────────────────────────────────────── */}
+      {sponsors.length > 0 && (
+        <section className="py-10 bg-gray-50 border-y border-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-6 md:gap-10 overflow-hidden">
+              <span className="shrink-0 text-xs font-bold uppercase tracking-widest text-gray-400 hidden md:block">
+                Apoiadores
+              </span>
+              <div className="relative flex-1 overflow-hidden">
+                {/* Fade edges */}
+                <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-50 to-transparent z-10 pointer-events-none" />
+                {/* Scrolling marquee */}
+                <motion.div
+                  className="flex items-center gap-10 md:gap-16"
+                  animate={{ x: sponsors.length > 3 ? ["0%", "-50%"] : "0%" }}
+                  transition={sponsors.length > 3 ? {
+                    repeat: Infinity,
+                    duration: sponsors.length * 4,
+                    ease: "linear",
+                  } : {}}
+                  style={{ width: sponsors.length > 3 ? "max-content" : "100%" }}
+                >
+                  {/* Duplicate for seamless loop */}
+                  {[...sponsors, ...(sponsors.length > 3 ? sponsors : [])].map((s, i) => (
+                    <div key={`${s.id}-${i}`} className="shrink-0 flex items-center justify-center h-12" style={{ minWidth: 100 }}>
+                      {s.websiteUrl ? (
+                        <a href={s.websiteUrl} target="_blank" rel="noopener noreferrer" title={s.name}>
+                          <img
+                            src={s.logoUrl}
+                            alt={s.name}
+                            className="max-h-10 max-w-[120px] object-contain opacity-60 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-300"
+                          />
+                        </a>
+                      ) : (
+                        <img
+                          src={s.logoUrl}
+                          alt={s.name}
+                          className="max-h-10 max-w-[120px] object-contain opacity-60 grayscale"
+                          title={s.name}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ─── Stats Section ───────────────────────────────────────── */}
       <section className="py-16 bg-primary relative overflow-hidden">

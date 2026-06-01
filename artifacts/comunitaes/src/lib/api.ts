@@ -63,6 +63,17 @@ export type Setting = {
   label: string;
 };
 
+export type Sponsor = {
+  id: number;
+  name: string;
+  logoUrl: string;
+  websiteUrl: string;
+  active: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export const api = {
   auth: {
     login: (password: string) =>
@@ -104,5 +115,16 @@ export const api = {
     set: (key: string, value: string, label?: string) =>
       request<Setting>(`/settings/${key}`, { method: "PUT", body: JSON.stringify({ value, label }) }),
     publicList: () => request<Setting[]>("/settings"),
+  },
+
+  sponsors: {
+    list: () => request<Sponsor[]>("/sponsors"),
+    listAll: () => request<Sponsor[]>("/sponsors/all"),
+    create: (data: Omit<Sponsor, "id" | "createdAt" | "updatedAt">) =>
+      request<Sponsor>("/sponsors", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: Partial<Omit<Sponsor, "id" | "createdAt" | "updatedAt">>) =>
+      request<Sponsor>(`/sponsors/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: number) =>
+      request<void>(`/sponsors/${id}`, { method: "DELETE" }),
   },
 };

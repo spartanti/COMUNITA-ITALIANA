@@ -25,6 +25,7 @@ import AdminPostEdit from "@/pages/admin/AdminPostEdit";
 import AdminBanners from "@/pages/admin/AdminBanners";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminAssociates from "@/pages/admin/AdminAssociates";
+import AdminSponsors from "@/pages/admin/AdminSponsors";
 import AssociarSe from "@/pages/AssociarSe";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ function Router() {
       <Route path="/admin/banners" component={() => <ProtectedAdminRoute component={AdminBanners} />} />
       <Route path="/admin/settings" component={() => <ProtectedAdminRoute component={AdminSettings} />} />
       <Route path="/admin/associates" component={() => <ProtectedAdminRoute component={AdminAssociates} />} />
+      <Route path="/admin/sponsors" component={() => <ProtectedAdminRoute component={AdminSponsors} />} />
 
       <Route component={NotFound} />
     </Switch>
