@@ -12,7 +12,7 @@ const DEFAULT_BG = "https://comunitaes.org.br/wp-content/uploads/2020/12/Buenos_
 
 export function PageHeader({ title, subtitle, children, imageUrl = DEFAULT_BG }: PageHeaderProps) {
   return (
-    <div className="bg-primary py-16 md:py-20 relative overflow-hidden">
+    <div className="bg-primary py-16 md:py-20 relative overflow-hidden -mt-[88px] pt-[calc(4rem+88px)] md:pt-[calc(5rem+88px)]">
       {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-10"
