@@ -8,11 +8,17 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
           {/* Logo & About */}
           <div>
-            <img
-              src="https://comunitaes.org.br/wp-content/uploads/2020/08/cropped-Logo_Comunita%CC%80_01_fundo_escuro.png"
-              alt="ComunitaES Logo"
-              className="h-16 mb-6"
-            />
+            <div className="inline-flex items-center justify-center bg-white rounded-xl px-4 py-3 mb-6 shadow-md">
+              <img
+                src="https://comunitaes.org.br/wp-content/uploads/2020/08/cropped-Logo_Comunita%CC%80_01_fundo_claro.png"
+                alt="ComunitaES Logo"
+                className="h-14 object-contain"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src =
+                    "https://comunitaes.org.br/wp-content/uploads/2020/08/cropped-Logo_Comunita%CC%80_01_fundo_escuro.png";
+                }}
+              />
+            </div>
             <p className="text-gray-300 text-sm leading-relaxed mb-6">
               A Associação Federativa Comunità Italiana do Espírito Santo atua na preservação e promoção da cultura, história e tradições italianas no estado, que é o berço da imigração italiana no Brasil.
             </p>
