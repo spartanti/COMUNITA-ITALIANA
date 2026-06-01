@@ -7,6 +7,7 @@ import { siteData } from "@/data/siteData";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { api, type Banner, type Sponsor } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const DEFAULT_BANNER = {
   title: "Comunità Italiana do Espírito Santo",
@@ -83,6 +84,7 @@ function FadeIn({
 }
 
 export default function Home() {
+  const { t } = useLanguage();
   const recentPosts = siteData.posts.slice(0, 6);
   const [banner, setBanner] = useState<Banner | null>(null);
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
@@ -102,7 +104,7 @@ export default function Home() {
     <div className="w-full">
       {/* ─── Hero Section ─────────────────────────────────────────── */}
       {/* Negative margin cancels the Layout pt so the hero is flush with the navbar */}
-      <section className="relative flex items-center justify-center overflow-hidden -mt-[91px] md:-mt-[99px]"
+      <section className="relative flex items-center justify-center overflow-hidden -mt-[88px]"
         style={{ minHeight: "100svh" }}
       >
         {/* Background image with subtle scale */}
@@ -139,7 +141,7 @@ export default function Home() {
               className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-full px-4 py-1.5 text-white/90 text-sm font-medium mb-6"
             >
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              Associação Federativa — ES, Brasil
+              {t.home.tagline}
             </motion.div>
 
             <motion.h1
@@ -169,10 +171,10 @@ export default function Home() {
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-white font-bold text-base px-8 py-6 rounded-full border-none shadow-xl hover:shadow-accent/40 hover:-translate-y-0.5 transition-all duration-200">
-                <Link href={hero.ctaPrimaryUrl}>{hero.ctaPrimaryText}</Link>
+                <Link href={hero.ctaPrimaryUrl}>{hero.ctaPrimaryText || t.home.cta1}</Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-sm border-2 border-white/60 text-white hover:bg-white hover:text-primary font-bold text-base px-8 py-6 rounded-full transition-all duration-200">
-                <Link href={hero.ctaSecondaryUrl}>{hero.ctaSecondaryText}</Link>
+                <Link href={hero.ctaSecondaryUrl}>{hero.ctaSecondaryText || t.home.cta2}</Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -222,7 +224,7 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="flex items-center gap-6 md:gap-10 overflow-hidden">
               <span className="shrink-0 text-xs font-bold uppercase tracking-widest text-gray-400 hidden md:block">
-                Apoiadores
+                {t.home.sponsors}
               </span>
               <div className="relative flex-1 overflow-hidden">
                 {/* Fade edges */}
@@ -297,19 +299,17 @@ export default function Home() {
         <div className="container mx-auto px-4 relative">
           <div className="max-w-3xl mx-auto text-center">
             <FadeIn>
-              <span className="inline-block text-accent font-semibold text-sm tracking-widest uppercase mb-4">Nossa Missão</span>
+              <span className="inline-block text-accent font-semibold text-sm tracking-widest uppercase mb-4">{t.home.missionLabel}</span>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-primary mb-4 leading-tight">
-                O Berço da Imigração
+                {t.home.missionTitle.split("\n")[0]}
                 <br />
-                <span className="text-accent">Italiana no Brasil</span>
+                <span className="text-accent">{t.home.missionTitle.split("\n")[1]}</span>
               </h2>
               <div className="w-16 h-1.5 bg-accent rounded-full mx-auto mb-8" />
-              <p className="text-lg text-gray-700 leading-relaxed">
-                A Associação Federativa Comunità Italiana do Espírito Santo foi fundada com o propósito de unir, representar e fortalecer a presença italiana em nosso estado. Atuamos como um elo entre o passado glorioso dos nossos <em>nonnos</em> e o futuro das novas gerações de ítalo-capixabas.
-              </p>
+              <p className="text-lg text-gray-700 leading-relaxed">{t.home.missionLine}</p>
               <Button asChild variant="link" className="mt-8 text-primary hover:text-accent font-semibold text-base group">
                 <Link href="/historia">
-                  Ler mais sobre nossa história
+                  {t.home.readMore}
                   <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>

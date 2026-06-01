@@ -1,12 +1,13 @@
 import { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Newspaper, Image, Settings, LogOut, ChevronRight, Globe, Users, Star } from "lucide-react";
+import { LayoutDashboard, Newspaper, Image, Settings, LogOut, ChevronRight, Globe, Users, Star, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAdmin } from "@/contexts/AdminContext";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Notícias", href: "/admin/posts", icon: Newspaper },
+  { label: "Páginas", href: "/admin/pages", icon: FileText },
   { label: "Associados", href: "/admin/associates", icon: Users },
   { label: "Banner Principal", href: "/admin/banners", icon: Image },
   { label: "Patrocinadores", href: "/admin/sponsors", icon: Star },

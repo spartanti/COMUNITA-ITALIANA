@@ -1,32 +1,30 @@
-import { siteData } from "@/data/siteData";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { siteData } from "@/data/siteData";
 
 export default function Diretoria() {
+  const { t } = useLanguage();
+  const [content, setContent] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/settings/page:diretoria")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.value) setContent(d.value); })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="bg-white">
-      {/* Page Header */}
-      <div className="bg-primary py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://comunitaes.org.br/wp-content/uploads/2020/12/Buenos_Aires_Guarapari_2019.jpg')] bg-cover bg-center opacity-10"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-4xl md:text-5xl font-bold font-serif text-white mb-4">Diretoria</h1>
-            <div className="w-20 h-1.5 bg-accent rounded-full"></div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Content */}
+      <PageHeader title={t.pageHeaders.board} />
       <div className="container mx-auto px-4 py-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="max-w-4xl mx-auto prose prose-lg prose-headings:font-serif prose-headings:text-primary prose-h3:text-2xl prose-h3:mt-8 prose-h3:mb-4 prose-p:my-2 prose-ul:my-2 prose-li:my-1 prose-strong:text-primary"
-          dangerouslySetInnerHTML={{ __html: siteData.diretoria }}
+          className="max-w-4xl mx-auto prose prose-lg prose-headings:font-serif prose-headings:text-primary prose-a:text-secondary prose-img:rounded-2xl prose-img:shadow-lg"
+          dangerouslySetInnerHTML={{ __html: content ?? siteData.diretoria }}
         />
       </div>
     </div>

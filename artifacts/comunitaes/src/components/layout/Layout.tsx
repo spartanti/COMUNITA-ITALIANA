@@ -11,7 +11,7 @@ export function Layout({ children }: { children: ReactNode }) {
   }, [location]);
 
   return (
-    <div className="min-h-[100dvh] flex flex-col font-sans text-gray-800 bg-white pt-[91px] md:pt-[99px]">
+    <div className="min-h-[100dvh] flex flex-col font-sans text-gray-800 bg-white pt-[88px]">
       <Navbar />
       <main className="flex-grow">{children}</main>
       <Footer />

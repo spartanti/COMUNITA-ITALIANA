@@ -1,5 +1,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { User, CreditCard, MapPin, Phone, Mail, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +38,7 @@ type AddressFields = {
 const EMPTY = { logradouro: "", bairro: "", cidade: "", estado: "" };
 
 export default function AssociarSe() {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [form, setForm] = useState({
     nomeCompleto: "",
@@ -159,22 +162,7 @@ export default function AssociarSe() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="bg-primary py-20 relative overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-10"
-          style={{ backgroundImage: "url('https://comunitaes.org.br/wp-content/uploads/2020/12/Buenos_Aires_Guarapari_2019.jpg')" }}
-        />
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h1 className="text-4xl md:text-5xl font-bold font-serif text-white mb-4">Associe-se</h1>
-            <div className="w-20 h-1.5 bg-accent rounded-full" />
-            <p className="text-white/70 mt-4 max-w-xl">
-              Faça parte da maior rede de descendentes italianos do Espírito Santo. Preencha o formulário abaixo e nossa equipe entrará em contato.
-            </p>
-          </motion.div>
-        </div>
-      </div>
+      <PageHeader title={t.pageHeaders.join} subtitle={t.join.subtitle} />
 
       {/* Form */}
       <div className="container mx-auto px-4 py-16 max-w-2xl">

@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Send } from "lucide-react";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Contato() {
+  const { t } = useLanguage();
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,20 +23,7 @@ export default function Contato() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Page Header */}
-      <div className="bg-primary py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://comunitaes.org.br/wp-content/uploads/2020/12/Buenos_Aires_Guarapari_2019.jpg')] bg-cover bg-center opacity-10"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <h1 className="text-4xl md:text-5xl font-bold font-serif text-white mb-4">Contato</h1>
-            <div className="w-20 h-1.5 bg-accent rounded-full"></div>
-          </motion.div>
-        </div>
-      </div>
+      <PageHeader title={t.pageHeaders.contact} />
 
       <div className="container mx-auto px-4 py-16 max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">

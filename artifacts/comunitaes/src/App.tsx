@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 
 import { Layout } from "@/components/layout/Layout";
 import { AdminProvider, useAdmin } from "@/contexts/AdminContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SEOProvider } from "@/components/SEO";
 
 import Home from "@/pages/Home";
@@ -26,6 +27,7 @@ import AdminBanners from "@/pages/admin/AdminBanners";
 import AdminSettings from "@/pages/admin/AdminSettings";
 import AdminAssociates from "@/pages/admin/AdminAssociates";
 import AdminSponsors from "@/pages/admin/AdminSponsors";
+import AdminPages from "@/pages/admin/AdminPages";
 import AssociarSe from "@/pages/AssociarSe";
 
 const queryClient = new QueryClient();
@@ -60,6 +62,7 @@ function Router() {
       <Route path="/admin/settings" component={() => <ProtectedAdminRoute component={AdminSettings} />} />
       <Route path="/admin/associates" component={() => <ProtectedAdminRoute component={AdminAssociates} />} />
       <Route path="/admin/sponsors" component={() => <ProtectedAdminRoute component={AdminSponsors} />} />
+      <Route path="/admin/pages" component={() => <ProtectedAdminRoute component={AdminPages} />} />
 
       <Route component={NotFound} />
     </Switch>
@@ -70,6 +73,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <LanguageProvider>
         <AdminProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
             <SEOProvider />
@@ -77,6 +81,7 @@ function App() {
           </WouterRouter>
           <Toaster />
         </AdminProvider>
+        </LanguageProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
