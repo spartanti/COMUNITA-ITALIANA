@@ -1,0 +1,19 @@
+# Replit-specific directories (large, not needed for deployment)
+.local/
+.agents/
+.canvas/
+
+# Build artifacts (rebuilt on Railway)
+artifacts/*/dist/
+lib/*/dist/
+artifacts/comunitaes/dist/
+
+# Dependencies (reinstalled on Railway)
+node_modules/
+
+# Git history
+.git/
+
+# Misc
+*.log
+.DS_Store
