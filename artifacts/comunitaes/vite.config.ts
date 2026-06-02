@@ -49,6 +49,18 @@ export default defineConfig({
     fs: {
       strict: true,
     },
+    proxy: {
+      "/api": {
+        target: process.env.API_URL ?? "https://web-production-7421b.up.railway.app",
+        changeOrigin: true,
+        secure: true,
+      },
+      "/uploads": {
+        target: process.env.API_URL ?? "https://web-production-7421b.up.railway.app",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   preview: {
     port,
