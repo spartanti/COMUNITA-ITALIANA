@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { api, type Post } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
@@ -155,15 +156,11 @@ export default function AdminPostEdit() {
             </div>
 
             <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="content">Conteúdo * <span className="text-xs text-gray-400 font-normal">(HTML é suportado)</span></Label>
-              <Textarea
-                id="content"
+              <Label>Conteúdo *</Label>
+              <RichTextEditor
                 value={form.content}
-                onChange={set("content")}
-                placeholder="<p>Conteúdo completo da notícia...</p>"
-                rows={16}
-                className="font-mono text-sm"
-                required
+                onChange={(html) => setForm((prev) => ({ ...prev, content: html }))}
+                minHeight={420}
               />
             </div>
           </div>

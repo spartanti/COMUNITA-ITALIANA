@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Save, ExternalLink, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 type PageConfig = {
   key: string;
@@ -109,36 +110,20 @@ export default function AdminPages() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">
-                Conteúdo HTML{" "}
-                <span className="text-xs text-gray-400 font-normal">— Deixe vazio para usar o conteúdo padrão importado do WordPress</span>
+              <Label>
+                Conteúdo{" "}
+                <span className="text-xs text-gray-400 font-normal">— Deixe vazio para usar o conteúdo padrão</span>
               </Label>
               {loading ? (
                 <div className="h-96 bg-gray-50 rounded-xl animate-pulse" />
               ) : (
-                <textarea
-                  id="content"
+                <RichTextEditor
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder={`Cole aqui o HTML do conteúdo de "${active.label}". Você pode usar tags como <h2>, <p>, <ul>, <strong>, <em>, <img>, etc.`}
-                  rows={22}
-                  className="w-full border border-input bg-background px-4 py-3 text-sm rounded-xl font-mono focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-colors resize-y"
+                  onChange={setContent}
+                  minHeight={480}
                 />
               )}
             </div>
-
-            {/* Preview toggle */}
-            {content && (
-              <details className="mt-4">
-                <summary className="text-sm text-gray-500 cursor-pointer hover:text-primary select-none">
-                  Pré-visualizar HTML renderizado
-                </summary>
-                <div
-                  className="mt-3 p-4 bg-gray-50 rounded-xl border border-gray-200 prose prose-sm max-w-none max-h-60 overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: content }}
-                />
-              </details>
-            )}
           </div>
 
           <div className="flex gap-3 justify-end">
