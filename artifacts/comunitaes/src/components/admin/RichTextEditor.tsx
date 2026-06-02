@@ -5,12 +5,15 @@ import Link from '@tiptap/extension-link';
 import TextAlign from '@tiptap/extension-text-align';
 import { Table, TableRow, TableCell, TableHeader } from '@tiptap/extension-table';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect } from 'react';
+import Image from '@tiptap/extension-image';
+import Youtube from '@tiptap/extension-youtube';
+import { useEffect, useRef, useState } from 'react';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   Link as LinkIcon, Table as TableIcon, Undo, Redo,
-  Heading2, Heading3, Minus, Quote,
+  Heading2, Heading3, Minus, Quote, ImageIcon, Youtube as YoutubeIcon,
+  Loader2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -51,6 +54,9 @@ function Divider() {
 }
 
 export function RichTextEditor({ value, onChange, minHeight = 400 }: Props) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -61,6 +67,8 @@ export function RichTextEditor({ value, onChange, minHeight = 400 }: Props) {
       TableRow,
       TableHeader,
       TableCell,
+      Image.configure({ inline: false, allowBase64: false }),
+      Youtube.configure({ controls: true, nocookie: true }),
       Placeholder.configure({ placeholder: 'Escreva o conteúdo aqui...' }),
     ],
     content: value,
@@ -69,7 +77,6 @@ export function RichTextEditor({ value, onChange, minHeight = 400 }: Props) {
     },
   });
 
-  // sync external value changes (ex: troca de página)
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
       editor.commands.setContent(value, false);
@@ -88,6 +95,63 @@ export function RichTextEditor({ value, onChange, minHeight = 400 }: Props) {
 
   function insertTable() {
     editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  }
+
+  function insertImageByUrl() {
+    const url = window.prompt('URL da imagem:');
+    if (url) editor?.chain().focus().setImage({ src: url }).run();
+  }
+
+  async function uploadImageFile(file: File) {
+    if (!file.type.startsWith('image/')) return;
+    setUploading(true);
+    try {
+      const token = localStorage.getItem('admin_token') ?? '';
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/uploads', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Falha no upload');
+      const { url } = await res.json() as { url: string };
+      editor?.chain().focus().setImage({ src: url }).run();
+    } catch {
+      alert('Erro ao fazer upload da imagem.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function handleImageButton() {
+    // mostra opções: upload ou URL
+    const choice = window.confirm('Clique em OK para fazer upload de um arquivo.\nClique em Cancelar para inserir por URL.');
+    if (choice) {
+      fileInputRef.current?.click();
+    } else {
+      insertImageByUrl();
+    }
+  }
+
+  function insertVideo() {
+    const url = window.prompt('URL do vídeo (YouTube, Vimeo ou link direto):');
+    if (!url) return;
+
+    // YouTube
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      editor?.chain().focus().setYoutubeVideo({ src: url }).run();
+      return;
+    }
+
+    // Vimeo ou outro — embed como iframe via HTML
+    let embedUrl = url;
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+
+    editor?.chain().focus().insertContent(
+      `<iframe src="${embedUrl}" width="640" height="360" frameborder="0" allowfullscreen style="max-width:100%;display:block;margin:1rem auto"></iframe>`
+    ).run();
   }
 
   if (!editor) return <div className="h-32 bg-gray-50 rounded-xl animate-pulse" />;
@@ -129,13 +193,13 @@ export function RichTextEditor({ value, onChange, minHeight = 400 }: Props) {
 
         <Divider />
 
-        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} title="Alinhar à esquerda">
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} title="Esquerda">
           <AlignLeft className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} title="Centralizar">
           <AlignCenter className="w-4 h-4" />
         </ToolbarButton>
-        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} title="Alinhar à direita">
+        <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} title="Direita">
           <AlignRight className="w-4 h-4" />
         </ToolbarButton>
         <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })} title="Justificado">
@@ -159,6 +223,18 @@ export function RichTextEditor({ value, onChange, minHeight = 400 }: Props) {
 
         <Divider />
 
+        {/* Image */}
+        <ToolbarButton onClick={handleImageButton} disabled={uploading} title="Inserir imagem (upload ou URL)">
+          {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+        </ToolbarButton>
+
+        {/* Video */}
+        <ToolbarButton onClick={insertVideo} title="Inserir vídeo (YouTube, Vimeo)">
+          <YoutubeIcon className="w-4 h-4" />
+        </ToolbarButton>
+
+        <Divider />
+
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Desfazer">
           <Undo className="w-4 h-4" />
         </ToolbarButton>
@@ -167,10 +243,23 @@ export function RichTextEditor({ value, onChange, minHeight = 400 }: Props) {
         </ToolbarButton>
       </div>
 
+      {/* Hidden file input for image upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) uploadImageFile(file);
+          e.target.value = '';
+        }}
+      />
+
       {/* Editor area */}
       <EditorContent
         editor={editor}
-        className="prose prose-sm max-w-none px-4 py-3 focus:outline-none"
+        className="prose prose-sm max-w-none px-4 py-3 focus:outline-none [&_.tiptap]:outline-none [&_img]:max-w-full [&_iframe]:max-w-full"
         style={{ minHeight }}
       />
     </div>
