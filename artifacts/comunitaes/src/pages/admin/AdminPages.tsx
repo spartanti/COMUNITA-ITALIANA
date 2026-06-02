@@ -21,11 +21,11 @@ const FIXED_PAGES: PageConfig[] = [
 
 // Default nav positions (current hardcoded behaviour)
 const DEFAULT_NAV: Record<string, { label: string; section: string; order: number }> = {
-  quemsomos:     { label: "Quem Somos",           section: "top",                      order: 0 },
+  quemsomos:     { label: "Quem Somos",           section: "dropdown:Quem Somos",      order: 0 },
   historia:      { label: "História da Imigração", section: "none",                     order: 0 },
   transparencia: { label: "Transparência",          section: "dropdown:Institucional",   order: 0 },
-  diretoria:     { label: "Diretoria",              section: "dropdown:Institucional",   order: 1 },
-  estatuto:      { label: "Estatuto",               section: "dropdown:Institucional",   order: 2 },
+  diretoria:     { label: "Diretoria",              section: "dropdown:Quem Somos",      order: 1 },
+  estatuto:      { label: "Estatuto",               section: "dropdown:Quem Somos",      order: 2 },
 };
 
 function slugify(str: string) {

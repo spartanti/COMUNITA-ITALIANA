@@ -16,11 +16,11 @@ type FixedNavConfig = { label: string; section: string; order: number };
 type FixedNavConfigs = Record<string, FixedNavConfig>;
 
 const FIXED_DEFAULTS: FixedNavConfigs = {
-  quemsomos:     { label: "Quem Somos",           section: "top",           order: 0 },
-  historia:      { label: "História da Imigração", section: "none",          order: 0 },
-  transparencia: { label: "Transparência",          section: "institucional", order: 0 },
-  diretoria:     { label: "Diretoria",              section: "institucional", order: 1 },
-  estatuto:      { label: "Estatuto",               section: "institucional", order: 2 },
+  quemsomos:     { label: "Quem Somos",           section: "dropdown:Quem Somos",     order: 0 },
+  historia:      { label: "História da Imigração", section: "none",                    order: 0 },
+  transparencia: { label: "Transparência",          section: "dropdown:Institucional",  order: 0 },
+  diretoria:     { label: "Diretoria",              section: "dropdown:Quem Somos",     order: 1 },
+  estatuto:      { label: "Estatuto",               section: "dropdown:Quem Somos",     order: 2 },
 };
 
 const FIXED_HREFS: Record<string, string> = {
