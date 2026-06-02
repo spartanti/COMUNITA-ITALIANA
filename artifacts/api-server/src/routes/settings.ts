@@ -24,6 +24,16 @@ router.get("/settings/all", requireAdmin, async (_req, res): Promise<void> => {
   res.json(filtered);
 });
 
+// Public: fetch a single setting by key (page content, etc.)
+// Must be defined AFTER /settings/all so "all" isn't swallowed by :key
+router.get("/settings/:key", async (req, res): Promise<void> => {
+  const key = Array.isArray(req.params.key) ? req.params.key[0] : req.params.key;
+  if (key === "admin_password_hash") { res.status(403).json({ error: "Acesso negado" }); return; }
+  const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, key));
+  if (!row) { res.status(404).json({ error: "Configuração não encontrada" }); return; }
+  res.json(row);
+});
+
 router.put("/settings/:key", requireAdmin, async (req, res): Promise<void> => {
   const key = Array.isArray(req.params.key) ? req.params.key[0] : req.params.key;
 
