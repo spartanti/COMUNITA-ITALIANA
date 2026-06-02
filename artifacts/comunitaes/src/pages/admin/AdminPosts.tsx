@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Plus, Pencil, Trash2, Eye, EyeOff, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Eye, EyeOff, Search, Download, Loader2 } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api, type Post } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { siteData } from "@/data/siteData";
 
 export default function AdminPosts() {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -42,6 +43,33 @@ export default function AdminPosts() {
     }
   };
 
+  const [importing, setImporting] = useState(false);
+
+  async function handleImport() {
+    if (!confirm(`Importar ${siteData.posts.length} notícias do site para o banco de dados? Posts já existentes (mesmo slug) serão ignorados.`)) return;
+    setImporting(true);
+    const existingSlugs = new Set(posts.map(p => p.slug));
+    const toImport = siteData.posts.filter(p => !existingSlugs.has(p.slug));
+    let ok = 0;
+    for (const p of toImport) {
+      try {
+        await api.posts.create({
+          title: p.title,
+          slug: p.slug,
+          content: p.content,
+          excerpt: p.excerpt,
+          category: p.categories?.[0] ?? "Notícias",
+          imageUrl: "",
+          published: true,
+        });
+        ok++;
+      } catch { /* skip */ }
+    }
+    toast({ title: `${ok} notícias importadas com sucesso!` });
+    setImporting(false);
+    load();
+  }
+
   const filtered = posts.filter((p) =>
     p.title.toLowerCase().includes(search.toLowerCase()) ||
     p.category.toLowerCase().includes(search.toLowerCase())
@@ -60,9 +88,17 @@ export default function AdminPosts() {
               className="pl-10"
             />
           </div>
-          <Button asChild className="bg-primary hover:bg-primary/90">
-            <Link href="/admin/posts/new"><Plus className="w-4 h-4 mr-2" /> Nova Notícia</Link>
-          </Button>
+          <div className="flex gap-2">
+            {posts.length === 0 && (
+              <Button variant="outline" onClick={handleImport} disabled={importing} className="gap-2">
+                {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                {importing ? "Importando..." : "Importar notícias do site"}
+              </Button>
+            )}
+            <Button asChild className="bg-primary hover:bg-primary/90">
+              <Link href="/admin/posts/new"><Plus className="w-4 h-4 mr-2" /> Nova Notícia</Link>
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
