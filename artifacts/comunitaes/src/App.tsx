@@ -54,9 +54,6 @@ function Router() {
       <Route path="/contato" component={() => <Layout><Contato /></Layout>} />
       <Route path="/associar-se" component={() => <Layout><AssociarSe /></Layout>} />
 
-      {/* Dynamic custom pages — must be before NotFound */}
-      <Route path="/:slug" component={() => <Layout><CustomPage /></Layout>} />
-
       {/* Admin routes */}
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={() => <ProtectedAdminRoute component={AdminDashboard} />} />
@@ -67,6 +64,9 @@ function Router() {
       <Route path="/admin/associates" component={() => <ProtectedAdminRoute component={AdminAssociates} />} />
       <Route path="/admin/sponsors" component={() => <ProtectedAdminRoute component={AdminSponsors} />} />
       <Route path="/admin/pages" component={() => <ProtectedAdminRoute component={AdminPages} />} />
+
+      {/* Dynamic custom pages — after all specific routes so /:slug doesn't shadow /admin */}
+      <Route path="/:slug" component={() => <Layout><CustomPage /></Layout>} />
 
       <Route component={NotFound} />
     </Switch>
