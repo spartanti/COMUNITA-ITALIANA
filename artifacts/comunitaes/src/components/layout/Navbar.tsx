@@ -89,14 +89,23 @@ export function Navbar() {
     .map(([name, items]) => ({ name, minOrder: Math.min(...items.map(i => i.order)) }))
     .sort((a, b) => a.minOrder - b.minOrder);
 
+  // If a "top" item has the same name as a dropdown group, absorb it into the dropdown
+  // to avoid duplicates (e.g. "Quem Somos" link + "Quem Somos" dropdown)
+  const dropdownGroupNames = new Set(dropdownGroups.keys());
+
   const navLinks: NavItem[] = [
     { name: t.nav.home, href: "/" },
-    ...topItems.map(i => ({ name: i.name, href: i.href })),
-    ...dropdownOrder.map(({ name }) => ({
-      name,
-      href: dropdownGroups.get(name)![0].href,
-      dropdown: dropdownGroups.get(name)!.map(i => ({ name: i.name, href: i.href })),
-    })),
+    ...topItems
+      .filter(i => !dropdownGroupNames.has(i.name))
+      .map(i => ({ name: i.name, href: i.href })),
+    ...dropdownOrder.map(({ name }) => {
+      const absorbed = topItems.find(i => i.name === name);
+      const groupItems = dropdownGroups.get(name)!;
+      const allItems = absorbed
+        ? [{ name: absorbed.name, href: absorbed.href }, ...groupItems.filter(i => i.href !== absorbed.href)]
+        : groupItems;
+      return { name, href: allItems[0].href, dropdown: allItems.map(i => ({ name: i.name, href: i.href })) };
+    }),
     { name: t.nav.news, href: "/noticias" },
     { name: t.nav.contact, href: "/contato" },
   ];
