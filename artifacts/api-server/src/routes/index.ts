@@ -8,6 +8,7 @@ import associatesRouter from "./associates";
 import storageRouter from "./storage";
 import sponsorsRouter from "./sponsors";
 import uploadRouter from "./upload";
+import pagesRouter from "./pages";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(associatesRouter);
 router.use(storageRouter);
 router.use(sponsorsRouter);
 router.use(uploadRouter);
+router.use(pagesRouter);
 
 export default router;

@@ -4,16 +4,20 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage, type Lang } from "@/contexts/LanguageContext";
+import { api, type CustomPage } from "@/lib/api";
 
 const FLAG: Record<Lang, string> = { pt: "🇧🇷", it: "🇮🇹" };
 const OTHER: Record<Lang, Lang> = { pt: "it", it: "pt" };
 const LANG_LABEL: Record<Lang, string> = { pt: "PT", it: "IT" };
+
+type NavItem = { name: string; href: string; dropdown?: { name: string; href: string }[] };
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [location] = useLocation();
   const { lang, setLang, t } = useLanguage();
+  const [customPages, setCustomPages] = useState<CustomPage[]>([]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -23,7 +27,14 @@ export function Navbar() {
 
   useEffect(() => { setIsOpen(false); }, [location]);
 
-  const navLinks = [
+  useEffect(() => {
+    api.customPages.list().then(setCustomPages).catch(() => {});
+  }, []);
+
+  const topCustom = customPages.filter(p => p.menuSection === "top");
+  const institucionalCustom = customPages.filter(p => p.menuSection === "institucional");
+
+  const navLinks: NavItem[] = [
     { name: t.nav.home, href: "/" },
     { name: t.nav.about, href: "/quem-somos" },
     {
@@ -33,8 +44,10 @@ export function Navbar() {
         { name: t.nav.transparency, href: "/transparencia" },
         { name: t.nav.board, href: "/diretoria" },
         { name: t.nav.statute, href: "/estatuto" },
+        ...institucionalCustom.map(p => ({ name: p.menuLabel || p.title, href: `/${p.slug}` })),
       ],
     },
+    ...topCustom.map(p => ({ name: p.menuLabel || p.title, href: `/${p.slug}` })),
     { name: t.nav.news, href: "/noticias" },
     { name: t.nav.contact, href: "/contato" },
   ];
@@ -45,7 +58,7 @@ export function Navbar() {
       "bg-[#f7f8fa] border-b border-gray-200/80",
       isScrolled ? "shadow-md" : "shadow-sm"
     )}>
-      {/* Italian flag strip — always 6px, never moves */}
+      {/* Italian flag strip */}
       <div className="h-[6px] w-full flex">
         <div className="flex-1 bg-[#009246]" />
         <div className="flex-1 bg-white" />
@@ -70,7 +83,7 @@ export function Navbar() {
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-0.5">
             {navLinks.map((link) => (
-              <div key={link.name} className="relative group">
+              <div key={link.href + link.name} className="relative group">
                 <Link
                   href={link.href}
                   className={cn(
@@ -91,7 +104,7 @@ export function Navbar() {
                     <div className="py-2 px-1">
                       {link.dropdown.map((dropLink) => (
                         <Link
-                          key={dropLink.name}
+                          key={dropLink.href}
                           href={dropLink.href}
                           className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary rounded-lg transition-colors mx-1"
                         >
@@ -108,7 +121,6 @@ export function Navbar() {
             <button
               onClick={() => setLang(OTHER[lang])}
               className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-sm font-semibold text-gray-700 transition-colors"
-              title={`Mudar para ${OTHER[lang] === "it" ? "Italiano" : "Português"}`}
             >
               <span className="text-base">{FLAG[OTHER[lang]]}</span>
               <span className="text-xs">{LANG_LABEL[OTHER[lang]]}</span>
@@ -125,7 +137,6 @@ export function Navbar() {
 
           {/* Mobile Toggle */}
           <div className="md:hidden flex items-center gap-2">
-            {/* Language toggle mobile */}
             <button
               onClick={() => setLang(OTHER[lang])}
               className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-gray-200 bg-white text-xs font-semibold text-gray-700"
@@ -168,7 +179,7 @@ export function Navbar() {
             <div className="flex flex-col py-4 px-4 space-y-1">
               {navLinks.map((link, i) => (
                 <motion.div
-                  key={link.name}
+                  key={link.href + link.name}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05, duration: 0.2 }}
@@ -186,7 +197,7 @@ export function Navbar() {
                     <div className="pl-4 mt-1 space-y-0.5">
                       {link.dropdown.map((dropLink) => (
                         <Link
-                          key={dropLink.name}
+                          key={dropLink.href}
                           href={dropLink.href}
                           className="block py-2 px-4 text-sm text-gray-500 hover:text-primary hover:bg-white rounded-lg transition-colors"
                         >

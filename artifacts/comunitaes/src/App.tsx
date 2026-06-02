@@ -29,6 +29,7 @@ import AdminAssociates from "@/pages/admin/AdminAssociates";
 import AdminSponsors from "@/pages/admin/AdminSponsors";
 import AdminPages from "@/pages/admin/AdminPages";
 import AssociarSe from "@/pages/AssociarSe";
+import CustomPage from "@/pages/CustomPage";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,9 @@ function Router() {
       <Route path="/estatuto" component={() => <Layout><Estatuto /></Layout>} />
       <Route path="/contato" component={() => <Layout><Contato /></Layout>} />
       <Route path="/associar-se" component={() => <Layout><AssociarSe /></Layout>} />
+
+      {/* Dynamic custom pages — must be before NotFound */}
+      <Route path="/:slug" component={() => <Layout><CustomPage /></Layout>} />
 
       {/* Admin routes */}
       <Route path="/admin/login" component={AdminLogin} />

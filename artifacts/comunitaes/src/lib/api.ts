@@ -63,6 +63,19 @@ export type Setting = {
   label: string;
 };
 
+export type CustomPage = {
+  id: number;
+  slug: string;
+  title: string;
+  content: string;
+  menuLabel: string;
+  menuSection: string;
+  menuOrder: number;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Sponsor = {
   id: number;
   name: string;
@@ -115,6 +128,18 @@ export const api = {
     set: (key: string, value: string, label?: string) =>
       request<Setting>(`/settings/${key}`, { method: "PUT", body: JSON.stringify({ value, label }) }),
     publicList: () => request<Setting[]>("/settings"),
+  },
+
+  customPages: {
+    list: () => request<CustomPage[]>("/pages"),
+    listAll: () => request<CustomPage[]>("/pages/all"),
+    get: (slug: string) => request<CustomPage>(`/pages/${slug}`),
+    create: (data: Omit<CustomPage, "id" | "createdAt" | "updatedAt">) =>
+      request<CustomPage>("/pages", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: Partial<Omit<CustomPage, "id" | "createdAt" | "updatedAt">>) =>
+      request<CustomPage>(`/pages/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: number) =>
+      request<void>(`/pages/${id}`, { method: "DELETE" }),
   },
 
   sponsors: {
