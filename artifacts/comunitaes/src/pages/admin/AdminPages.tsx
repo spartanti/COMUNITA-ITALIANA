@@ -5,20 +5,27 @@ import { api, type CustomPage } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Save, ExternalLink, FileText, Plus, Pencil, Trash2, X, Check, Eye, EyeOff } from "lucide-react";
+import { Save, ExternalLink, FileText, Plus, Pencil, Trash2, X, Check, Eye, EyeOff, Settings2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// ─── Fixed settings-based pages ────────────────────────────────────────────
-
-type PageConfig = { key: string; label: string; hint: string; href: string };
+type PageConfig = { key: string; label: string; hint: string; href: string; navKey: string };
 
 const FIXED_PAGES: PageConfig[] = [
-  { key: "page:quemsomos",    label: "Quem Somos",           hint: "Conteúdo da página Quem Somos.",           href: "/quem-somos" },
-  { key: "page:historia",     label: "História da Imigração", hint: "Conteúdo da página História.",             href: "/historia" },
-  { key: "page:transparencia",label: "Transparência",         hint: "Conteúdo da página Transparência.",        href: "/transparencia" },
-  { key: "page:diretoria",    label: "Diretoria",             hint: "Conteúdo da página Diretoria.",            href: "/diretoria" },
-  { key: "page:estatuto",     label: "Estatuto",              hint: "Conteúdo do Estatuto.",                    href: "/estatuto" },
+  { key: "page:quemsomos",     navKey: "quemsomos",     label: "Quem Somos",            hint: "Conteúdo da página Quem Somos.",     href: "/quem-somos" },
+  { key: "page:historia",      navKey: "historia",      label: "História da Imigração",  hint: "Conteúdo da página História.",        href: "/historia" },
+  { key: "page:transparencia", navKey: "transparencia", label: "Transparência",           hint: "Conteúdo da página Transparência.",   href: "/transparencia" },
+  { key: "page:diretoria",     navKey: "diretoria",     label: "Diretoria",               hint: "Conteúdo da página Diretoria.",       href: "/diretoria" },
+  { key: "page:estatuto",      navKey: "estatuto",      label: "Estatuto",                hint: "Conteúdo do Estatuto.",               href: "/estatuto" },
 ];
+
+// Default nav positions (current hardcoded behaviour)
+const DEFAULT_NAV: Record<string, { label: string; section: string; order: number }> = {
+  quemsomos:     { label: "Quem Somos",           section: "top",            order: 0 },
+  historia:      { label: "História da Imigração", section: "none",           order: 0 },
+  transparencia: { label: "Transparência",          section: "institucional",  order: 0 },
+  diretoria:     { label: "Diretoria",              section: "institucional",  order: 1 },
+  estatuto:      { label: "Estatuto",               section: "institucional",  order: 2 },
+};
 
 function slugify(str: string) {
   return str.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
@@ -36,6 +43,8 @@ const EMPTY_FORM: PageForm = {
   title: "", slug: "", content: "", menuLabel: "", menuSection: "none", menuOrder: 0, active: true,
 };
 
+type NavConfigs = Record<string, { label: string; section: string; order: number }>;
+
 export default function AdminPages() {
   const { toast } = useToast();
 
@@ -44,6 +53,8 @@ export default function AdminPages() {
   const [fixedContent, setFixedContent] = useState("");
   const [fixedLoading, setFixedLoading] = useState(false);
   const [fixedSaving, setFixedSaving] = useState(false);
+  const [navConfigs, setNavConfigs] = useState<NavConfigs>({ ...DEFAULT_NAV });
+  const [showMenuConfig, setShowMenuConfig] = useState(false);
 
   // ── custom section ──
   const [customPages, setCustomPages] = useState<CustomPage[]>([]);
@@ -54,13 +65,23 @@ export default function AdminPages() {
   const [formSaving, setFormSaving] = useState(false);
   const [formError, setFormError] = useState("");
 
-  // ── section selection ──
   const [section, setSection] = useState<Section>("fixed");
+
+  // load nav config
+  useEffect(() => {
+    fetch("/api/settings/nav:fixed_pages", {
+      headers: { Authorization: `Bearer ${localStorage.getItem("admin_token") ?? ""}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.value) setNavConfigs({ ...DEFAULT_NAV, ...JSON.parse(d.value) }); })
+      .catch(() => {});
+  }, []);
 
   // load fixed content when active page changes
   useEffect(() => {
     setFixedLoading(true);
     setFixedContent("");
+    setShowMenuConfig(false);
     fetch(`/api/settings/${activeFixed.key}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("admin_token") ?? ""}` },
     })
@@ -70,7 +91,6 @@ export default function AdminPages() {
       .finally(() => setFixedLoading(false));
   }, [activeFixed.key]);
 
-  // load custom pages
   async function loadCustom() {
     setCustomLoading(true);
     try { setCustomPages(await api.customPages.listAll()); }
@@ -79,10 +99,17 @@ export default function AdminPages() {
 
   useEffect(() => { loadCustom(); }, []);
 
+  function updateNavConfig(navKey: string, field: string, value: string | number) {
+    setNavConfigs(prev => ({ ...prev, [navKey]: { ...prev[navKey], [field]: value } }));
+  }
+
   async function saveFixed() {
     setFixedSaving(true);
     try {
-      await api.settings.set(activeFixed.key, fixedContent, activeFixed.label);
+      await Promise.all([
+        api.settings.set(activeFixed.key, fixedContent, activeFixed.label),
+        api.settings.set("nav:fixed_pages", JSON.stringify(navConfigs), "Configuração do menu de páginas fixas"),
+      ]);
       toast({ title: `"${activeFixed.label}" salvo com sucesso!` });
     } catch (e) {
       toast({ title: e instanceof Error ? e.message : "Erro ao salvar", variant: "destructive" });
@@ -100,43 +127,25 @@ export default function AdminPages() {
     finally { setFixedSaving(false); }
   }
 
-  function openCreate() {
-    setEditId(null);
-    setForm(EMPTY_FORM);
-    setFormError("");
-    setShowForm(true);
-  }
+  function openCreate() { setEditId(null); setForm(EMPTY_FORM); setFormError(""); setShowForm(true); }
 
   function openEdit(p: CustomPage) {
     setEditId(p.id);
-    setForm({
-      title: p.title, slug: p.slug, content: p.content,
-      menuLabel: p.menuLabel, menuSection: p.menuSection,
-      menuOrder: p.menuOrder, active: p.active,
-    });
+    setForm({ title: p.title, slug: p.slug, content: p.content, menuLabel: p.menuLabel, menuSection: p.menuSection, menuOrder: p.menuOrder, active: p.active });
     setFormError("");
     setShowForm(true);
   }
 
   async function saveCustom() {
-    if (!form.title.trim() || !form.slug.trim()) {
-      setFormError("Título e slug são obrigatórios.");
-      return;
-    }
-    setFormSaving(true);
-    setFormError("");
+    if (!form.title.trim() || !form.slug.trim()) { setFormError("Título e slug são obrigatórios."); return; }
+    setFormSaving(true); setFormError("");
     try {
-      if (editId !== null) {
-        await api.customPages.update(editId, form);
-      } else {
-        await api.customPages.create(form);
-      }
-      setShowForm(false);
-      await loadCustom();
+      if (editId !== null) await api.customPages.update(editId, form);
+      else await api.customPages.create(form);
+      setShowForm(false); await loadCustom();
       toast({ title: editId ? "Página atualizada!" : "Página criada com sucesso!" });
-    } catch (e) {
-      setFormError(e instanceof Error ? e.message : "Erro ao salvar.");
-    } finally { setFormSaving(false); }
+    } catch (e) { setFormError(e instanceof Error ? e.message : "Erro ao salvar."); }
+    finally { setFormSaving(false); }
   }
 
   async function deleteCustom(id: number) {
@@ -153,6 +162,8 @@ export default function AdminPages() {
   const sectionLabel = (s: string) =>
     s === "top" ? "Menu principal" : s === "institucional" ? "Institucional" : "Fora do menu";
 
+  const activeNav = navConfigs[activeFixed.navKey] ?? DEFAULT_NAV[activeFixed.navKey];
+
   return (
     <AdminLayout title="Conteúdo das Páginas">
 
@@ -164,35 +175,20 @@ export default function AdminPages() {
               <h2 className="text-lg font-bold font-serif text-primary">
                 {editId !== null ? "Editar Página" : "Nova Página"}
               </h2>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
+              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
             </div>
 
             <div className="p-6 space-y-5">
-              {formError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">{formError}</div>
-              )}
+              {formError && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">{formError}</div>}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>Título *</Label>
-                  <Input
-                    value={form.title}
-                    onChange={(e) => {
-                      const title = e.target.value;
-                      setForm(f => ({ ...f, title, ...(editId === null ? { slug: slugify(title), menuLabel: title } : {}) }));
-                    }}
-                    placeholder="Ex: Eventos 2025"
-                  />
+                  <Input value={form.title} onChange={(e) => { const title = e.target.value; setForm(f => ({ ...f, title, ...(editId === null ? { slug: slugify(title), menuLabel: title } : {}) })); }} placeholder="Ex: Eventos 2025" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Slug (URL) *</Label>
-                  <Input
-                    value={form.slug}
-                    onChange={(e) => setForm(f => ({ ...f, slug: slugify(e.target.value) }))}
-                    placeholder="eventos-2025"
-                  />
+                  <Input value={form.slug} onChange={(e) => setForm(f => ({ ...f, slug: slugify(e.target.value) }))} placeholder="eventos-2025" />
                   <p className="text-xs text-gray-400">/{form.slug || "..."}</p>
                 </div>
               </div>
@@ -200,19 +196,11 @@ export default function AdminPages() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <Label>Rótulo no menu</Label>
-                  <Input
-                    value={form.menuLabel}
-                    onChange={(e) => setForm(f => ({ ...f, menuLabel: e.target.value }))}
-                    placeholder="Texto que aparece no menu"
-                  />
+                  <Input value={form.menuLabel} onChange={(e) => setForm(f => ({ ...f, menuLabel: e.target.value }))} placeholder="Texto no menu" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Posição no menu</Label>
-                  <select
-                    value={form.menuSection}
-                    onChange={(e) => setForm(f => ({ ...f, menuSection: e.target.value }))}
-                    className="w-full border border-input bg-background px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
+                  <select value={form.menuSection} onChange={(e) => setForm(f => ({ ...f, menuSection: e.target.value }))} className="w-full border border-input bg-background px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
                     <option value="none">Fora do menu</option>
                     <option value="top">Menu principal</option>
                     <option value="institucional">Dropdown Institucional</option>
@@ -220,19 +208,12 @@ export default function AdminPages() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Ordem</Label>
-                  <Input
-                    type="number" min={0}
-                    value={form.menuOrder}
-                    onChange={(e) => setForm(f => ({ ...f, menuOrder: parseInt(e.target.value) || 0 }))}
-                  />
+                  <Input type="number" min={0} value={form.menuOrder} onChange={(e) => setForm(f => ({ ...f, menuOrder: parseInt(e.target.value) || 0 }))} />
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <div
-                  onClick={() => setForm(f => ({ ...f, active: !f.active }))}
-                  className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors ${form.active ? "bg-accent" : "bg-gray-300"}`}
-                >
+                <div onClick={() => setForm(f => ({ ...f, active: !f.active }))} className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors ${form.active ? "bg-accent" : "bg-gray-300"}`}>
                   <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${form.active ? "left-6" : "left-1"}`} />
                 </div>
                 <span className="text-sm font-medium text-gray-700">{form.active ? "Ativa" : "Inativa"}</span>
@@ -258,32 +239,28 @@ export default function AdminPages() {
       <div className="flex gap-6">
         {/* Sidebar */}
         <aside className="w-60 shrink-0 space-y-3">
-
-          {/* Fixed pages */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
               <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Páginas do Site</span>
             </div>
             <nav className="p-2 space-y-1">
               {FIXED_PAGES.map(p => (
-                <button
-                  key={p.key}
-                  onClick={() => { setSection("fixed"); setActiveFixed(p); }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-colors ${section === "fixed" && activeFixed.key === p.key ? "bg-accent/10 text-accent" : "text-gray-600 hover:bg-gray-50 hover:text-primary"}`}
-                >
-                  <FileText className="w-4 h-4 shrink-0" /> {p.label}
+                <button key={p.key} onClick={() => { setSection("fixed"); setActiveFixed(p); }}
+                  className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-left transition-colors ${section === "fixed" && activeFixed.key === p.key ? "bg-accent/10 text-accent" : "text-gray-600 hover:bg-gray-50 hover:text-primary"}`}>
+                  <FileText className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 truncate">{p.label}</span>
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-normal ${navConfigs[p.navKey]?.section === "none" ? "text-gray-400" : "bg-accent/10 text-accent"}`}>
+                    {sectionLabel(navConfigs[p.navKey]?.section ?? DEFAULT_NAV[p.navKey].section)}
+                  </span>
                 </button>
               ))}
             </nav>
           </div>
 
-          {/* Custom pages */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-gray-400">Páginas Personalizadas</span>
-              <button onClick={openCreate} className="text-accent hover:text-accent/80 transition-colors" title="Nova página">
-                <Plus className="w-4 h-4" />
-              </button>
+              <button onClick={openCreate} className="text-accent hover:text-accent/80" title="Nova página"><Plus className="w-4 h-4" /></button>
             </div>
             <nav className="p-2 space-y-1">
               {customLoading ? (
@@ -291,25 +268,15 @@ export default function AdminPages() {
               ) : customPages.length === 0 ? (
                 <div className="px-3 py-3 text-center">
                   <p className="text-xs text-gray-400 mb-2">Nenhuma página criada</p>
-                  <button onClick={openCreate} className="text-xs text-accent hover:underline flex items-center gap-1 mx-auto">
-                    <Plus className="w-3 h-3" /> Criar página
-                  </button>
+                  <button onClick={openCreate} className="text-xs text-accent hover:underline flex items-center gap-1 mx-auto"><Plus className="w-3 h-3" /> Criar página</button>
                 </div>
               ) : customPages.map(p => (
-                <div
-                  key={p.id}
-                  onClick={() => setSection("custom")}
-                  className="flex items-center gap-1 px-3 py-2 rounded-xl hover:bg-gray-50 group"
-                >
+                <div key={p.id} onClick={() => setSection("custom")} className="flex items-center gap-1 px-3 py-2 rounded-xl hover:bg-gray-50 group">
                   <FileText className="w-4 h-4 shrink-0 text-gray-400" />
                   <span className={`flex-1 text-sm font-medium truncate ${p.active ? "text-gray-700" : "text-gray-400 italic"}`}>{p.title}</span>
                   <div className="hidden group-hover:flex items-center gap-0.5">
-                    <button onClick={(e) => { e.stopPropagation(); openEdit(p); }} className="p-1 text-gray-400 hover:text-primary rounded" title="Editar">
-                      <Pencil className="w-3 h-3" />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); deleteCustom(p.id); }} className="p-1 text-gray-400 hover:text-red-600 rounded" title="Excluir">
-                      <Trash2 className="w-3 h-3" />
-                    </button>
+                    <button onClick={(e) => { e.stopPropagation(); openEdit(p); }} className="p-1 text-gray-400 hover:text-primary rounded"><Pencil className="w-3 h-3" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); deleteCustom(p.id); }} className="p-1 text-gray-400 hover:text-red-600 rounded"><Trash2 className="w-3 h-3" /></button>
                   </div>
                 </div>
               ))}
@@ -321,48 +288,88 @@ export default function AdminPages() {
         <div className="flex-1 space-y-4">
           {section === "fixed" ? (
             <>
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <div className="flex items-center justify-between mb-4">
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+                <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-bold text-primary font-serif">{activeFixed.label}</h2>
                     <p className="text-sm text-gray-400 mt-0.5">{activeFixed.hint}</p>
                   </div>
-                  <a href={activeFixed.href} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary transition-colors">
-                    <ExternalLink className="w-4 h-4" /> Ver página
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setShowMenuConfig(v => !v)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm transition-colors ${showMenuConfig ? "border-accent text-accent bg-accent/5" : "border-gray-200 text-gray-500 hover:border-gray-300"}`}>
+                      <Settings2 className="w-4 h-4" /> Configurar menu
+                    </button>
+                    <a href={activeFixed.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-primary transition-colors">
+                      <ExternalLink className="w-4 h-4" /> Ver página
+                    </a>
+                  </div>
                 </div>
+
+                {/* Menu config panel */}
+                {showMenuConfig && (
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
+                    <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Posição no Menu</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Rótulo no menu</Label>
+                        <Input
+                          value={activeNav.label}
+                          onChange={(e) => updateNavConfig(activeFixed.navKey, "label", e.target.value)}
+                          placeholder={activeFixed.label}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Posição</Label>
+                        <select
+                          value={activeNav.section}
+                          onChange={(e) => updateNavConfig(activeFixed.navKey, "section", e.target.value)}
+                          className="w-full h-8 border border-input bg-background px-3 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                        >
+                          <option value="none">Fora do menu</option>
+                          <option value="top">Menu principal</option>
+                          <option value="institucional">Dropdown Institucional</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Ordem</Label>
+                        <Input
+                          type="number" min={0}
+                          value={activeNav.order}
+                          onChange={(e) => updateNavConfig(activeFixed.navKey, "order", parseInt(e.target.value) || 0)}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">As alterações de menu são salvas junto com o conteúdo.</p>
+                  </div>
+                )}
+
                 <div className="space-y-1.5">
                   <Label>Conteúdo <span className="text-xs text-gray-400 font-normal">— Deixe vazio para usar o conteúdo padrão</span></Label>
-                  {fixedLoading ? (
-                    <div className="h-96 bg-gray-50 rounded-xl animate-pulse" />
-                  ) : (
+                  {fixedLoading ? <div className="h-96 bg-gray-50 rounded-xl animate-pulse" /> : (
                     <RichTextEditor value={fixedContent} onChange={setFixedContent} minHeight={480} />
                   )}
                 </div>
               </div>
+
               <div className="flex gap-3 justify-end">
                 <Button variant="outline" onClick={resetFixed} disabled={fixedSaving || fixedLoading}>Resetar para padrão</Button>
                 <Button onClick={saveFixed} disabled={fixedSaving || fixedLoading} className="bg-accent hover:bg-accent/90 text-white gap-2">
-                  <Save className="w-4 h-4" /> {fixedSaving ? "Salvando..." : "Salvar Conteúdo"}
+                  <Save className="w-4 h-4" /> {fixedSaving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>
             </>
           ) : (
-            /* Custom pages list view */
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h2 className="text-lg font-bold text-primary font-serif">Páginas Personalizadas</h2>
-                <Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-white gap-2">
-                  <Plus className="w-4 h-4" /> Nova Página
-                </Button>
+                <Button onClick={openCreate} className="bg-accent hover:bg-accent/90 text-white gap-2"><Plus className="w-4 h-4" /> Nova Página</Button>
               </div>
               {customPages.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-gray-400 text-sm mb-4">Nenhuma página personalizada ainda.</p>
-                  <Button onClick={openCreate} variant="outline" className="gap-2">
-                    <Plus className="w-4 h-4" /> Criar primeira página
-                  </Button>
+                  <Button onClick={openCreate} variant="outline" className="gap-2"><Plus className="w-4 h-4" /> Criar primeira página</Button>
                 </div>
               ) : (
                 <table className="w-full text-sm">
@@ -392,12 +399,8 @@ export default function AdminPages() {
                           </button>
                         </td>
                         <td className="px-5 py-3 text-right space-x-1">
-                          <button onClick={() => openEdit(p)} className="p-1.5 text-gray-400 hover:text-primary hover:bg-gray-100 rounded-lg" title="Editar">
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => deleteCustom(p.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Excluir">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <button onClick={() => openEdit(p)} className="p-1.5 text-gray-400 hover:text-primary hover:bg-gray-100 rounded-lg"><Pencil className="w-4 h-4" /></button>
+                          <button onClick={() => deleteCustom(p.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                         </td>
                       </tr>
                     ))}

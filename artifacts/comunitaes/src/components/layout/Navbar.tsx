@@ -12,12 +12,29 @@ const LANG_LABEL: Record<Lang, string> = { pt: "PT", it: "IT" };
 
 type NavItem = { name: string; href: string; dropdown?: { name: string; href: string }[] };
 
+type FixedNavConfig = { label: string; section: string; order: number };
+type FixedNavConfigs = Record<string, FixedNavConfig>;
+
+const FIXED_DEFAULTS: FixedNavConfigs = {
+  quemsomos:     { label: "Quem Somos",           section: "top",           order: 0 },
+  historia:      { label: "História da Imigração", section: "none",          order: 0 },
+  transparencia: { label: "Transparência",          section: "institucional", order: 0 },
+  diretoria:     { label: "Diretoria",              section: "institucional", order: 1 },
+  estatuto:      { label: "Estatuto",               section: "institucional", order: 2 },
+};
+
+const FIXED_HREFS: Record<string, string> = {
+  quemsomos: "/quem-somos", historia: "/historia", transparencia: "/transparencia",
+  diretoria: "/diretoria",  estatuto: "/estatuto",
+};
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [location] = useLocation();
   const { lang, setLang, t } = useLanguage();
   const [customPages, setCustomPages] = useState<CustomPage[]>([]);
+  const [fixedNavConfigs, setFixedNavConfigs] = useState<FixedNavConfigs>(FIXED_DEFAULTS);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -29,24 +46,39 @@ export function Navbar() {
 
   useEffect(() => {
     api.customPages.list().then(setCustomPages).catch(() => {});
+    fetch("/api/settings/nav:fixed_pages")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.value) setFixedNavConfigs({ ...FIXED_DEFAULTS, ...JSON.parse(d.value) }); })
+      .catch(() => {});
   }, []);
 
-  const topCustom = customPages.filter(p => p.menuSection === "top");
-  const institucionalCustom = customPages.filter(p => p.menuSection === "institucional");
+  // Build fixed page nav items grouped by section
+  const fixedTop = Object.entries(fixedNavConfigs)
+    .filter(([, c]) => c.section === "top")
+    .sort(([, a], [, b]) => a.order - b.order)
+    .map(([key, c]) => ({ name: c.label, href: FIXED_HREFS[key] }));
+
+  const fixedInstitucional = Object.entries(fixedNavConfigs)
+    .filter(([, c]) => c.section === "institucional")
+    .sort(([, a], [, b]) => a.order - b.order)
+    .map(([key, c]) => ({ name: c.label, href: FIXED_HREFS[key] }));
+
+  const topCustom = customPages.filter(p => p.menuSection === "top").sort((a, b) => a.menuOrder - b.menuOrder);
+  const institucionalCustom = customPages.filter(p => p.menuSection === "institucional").sort((a, b) => a.menuOrder - b.menuOrder);
+
+  const institucionalItems = [
+    ...fixedInstitucional,
+    ...institucionalCustom.map(p => ({ name: p.menuLabel || p.title, href: `/${p.slug}` })),
+  ];
 
   const navLinks: NavItem[] = [
     { name: t.nav.home, href: "/" },
-    { name: t.nav.about, href: "/quem-somos" },
-    {
+    ...fixedTop,
+    ...(institucionalItems.length > 0 ? [{
       name: t.nav.institutional,
-      href: "/transparencia",
-      dropdown: [
-        { name: t.nav.transparency, href: "/transparencia" },
-        { name: t.nav.board, href: "/diretoria" },
-        { name: t.nav.statute, href: "/estatuto" },
-        ...institucionalCustom.map(p => ({ name: p.menuLabel || p.title, href: `/${p.slug}` })),
-      ],
-    },
+      href: institucionalItems[0]?.href ?? "/transparencia",
+      dropdown: institucionalItems,
+    }] : []),
     ...topCustom.map(p => ({ name: p.menuLabel || p.title, href: `/${p.slug}` })),
     { name: t.nav.news, href: "/noticias" },
     { name: t.nav.contact, href: "/contato" },
