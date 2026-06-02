@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Save, ExternalLink, FileText, Plus, Pencil, Trash2, X, Check, Eye, EyeOff, Settings2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { MenuPositionField } from "@/components/admin/MenuPositionField";
 
 type PageConfig = { key: string; label: string; hint: string; href: string; navKey: string };
 
@@ -20,11 +21,11 @@ const FIXED_PAGES: PageConfig[] = [
 
 // Default nav positions (current hardcoded behaviour)
 const DEFAULT_NAV: Record<string, { label: string; section: string; order: number }> = {
-  quemsomos:     { label: "Quem Somos",           section: "top",            order: 0 },
-  historia:      { label: "História da Imigração", section: "none",           order: 0 },
-  transparencia: { label: "Transparência",          section: "institucional",  order: 0 },
-  diretoria:     { label: "Diretoria",              section: "institucional",  order: 1 },
-  estatuto:      { label: "Estatuto",               section: "institucional",  order: 2 },
+  quemsomos:     { label: "Quem Somos",           section: "top",                      order: 0 },
+  historia:      { label: "História da Imigração", section: "none",                     order: 0 },
+  transparencia: { label: "Transparência",          section: "dropdown:Institucional",   order: 0 },
+  diretoria:     { label: "Diretoria",              section: "dropdown:Institucional",   order: 1 },
+  estatuto:      { label: "Estatuto",               section: "dropdown:Institucional",   order: 2 },
 };
 
 function slugify(str: string) {
@@ -164,6 +165,12 @@ export default function AdminPages() {
 
   const activeNav = navConfigs[activeFixed.navKey] ?? DEFAULT_NAV[activeFixed.navKey];
 
+  // Collect all existing dropdown group names for autocomplete
+  const allDropdownGroups = Array.from(new Set([
+    ...Object.values(navConfigs).map(c => c.section).filter(s => s.startsWith("dropdown:")).map(s => s.slice(9)),
+    ...customPages.map(p => p.menuSection).filter(s => s.startsWith("dropdown:")).map(s => s.slice(9)),
+  ]));
+
   return (
     <AdminLayout title="Conteúdo das Páginas">
 
@@ -193,24 +200,15 @@ export default function AdminPages() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Rótulo no menu</Label>
-                  <Input value={form.menuLabel} onChange={(e) => setForm(f => ({ ...f, menuLabel: e.target.value }))} placeholder="Texto no menu" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Posição no menu</Label>
-                  <select value={form.menuSection} onChange={(e) => setForm(f => ({ ...f, menuSection: e.target.value }))} className="w-full border border-input bg-background px-3 py-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
-                    <option value="none">Fora do menu</option>
-                    <option value="top">Menu principal</option>
-                    <option value="institucional">Dropdown Institucional</option>
-                  </select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Ordem</Label>
-                  <Input type="number" min={0} value={form.menuOrder} onChange={(e) => setForm(f => ({ ...f, menuOrder: parseInt(e.target.value) || 0 }))} />
-                </div>
-              </div>
+              <MenuPositionField
+                section={form.menuSection}
+                order={form.menuOrder}
+                label={form.menuLabel}
+                existingGroups={allDropdownGroups}
+                onChangeSection={v => setForm(f => ({ ...f, menuSection: v }))}
+                onChangeOrder={v => setForm(f => ({ ...f, menuOrder: v }))}
+                onChangeLabel={v => setForm(f => ({ ...f, menuLabel: v }))}
+              />
 
               <div className="flex items-center gap-2">
                 <div onClick={() => setForm(f => ({ ...f, active: !f.active }))} className={`relative w-11 h-6 rounded-full cursor-pointer transition-colors ${form.active ? "bg-accent" : "bg-gray-300"}`}>
@@ -307,42 +305,16 @@ export default function AdminPages() {
 
                 {/* Menu config panel */}
                 {showMenuConfig && (
-                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Posição no Menu</p>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Rótulo no menu</Label>
-                        <Input
-                          value={activeNav.label}
-                          onChange={(e) => updateNavConfig(activeFixed.navKey, "label", e.target.value)}
-                          placeholder={activeFixed.label}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Posição</Label>
-                        <select
-                          value={activeNav.section}
-                          onChange={(e) => updateNavConfig(activeFixed.navKey, "section", e.target.value)}
-                          className="w-full h-8 border border-input bg-background px-3 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                          <option value="none">Fora do menu</option>
-                          <option value="top">Menu principal</option>
-                          <option value="institucional">Dropdown Institucional</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Ordem</Label>
-                        <Input
-                          type="number" min={0}
-                          value={activeNav.order}
-                          onChange={(e) => updateNavConfig(activeFixed.navKey, "order", parseInt(e.target.value) || 0)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2">As alterações de menu são salvas junto com o conteúdo.</p>
-                  </div>
+                  <MenuPositionField
+                    section={activeNav.section}
+                    order={activeNav.order}
+                    label={activeNav.label}
+                    existingGroups={allDropdownGroups}
+                    onChangeSection={v => updateNavConfig(activeFixed.navKey, "section", v)}
+                    onChangeOrder={v => updateNavConfig(activeFixed.navKey, "order", v)}
+                    onChangeLabel={v => updateNavConfig(activeFixed.navKey, "label", v)}
+                    compact
+                  />
                 )}
 
                 <div className="space-y-1.5">

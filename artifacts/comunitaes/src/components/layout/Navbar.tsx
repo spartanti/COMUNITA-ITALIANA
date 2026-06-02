@@ -52,34 +52,51 @@ export function Navbar() {
       .catch(() => {});
   }, []);
 
-  // Build fixed page nav items grouped by section
-  const fixedTop = Object.entries(fixedNavConfigs)
-    .filter(([, c]) => c.section === "top")
-    .sort(([, a], [, b]) => a.order - b.order)
-    .map(([key, c]) => ({ name: c.label, href: FIXED_HREFS[key] }));
+  function getDropdownGroup(section: string): string | null {
+    if (section.startsWith("dropdown:")) return section.slice(9);
+    if (section === "institucional") return "Institucional"; // legacy
+    return null;
+  }
 
-  const fixedInstitucional = Object.entries(fixedNavConfigs)
-    .filter(([, c]) => c.section === "institucional")
-    .sort(([, a], [, b]) => a.order - b.order)
-    .map(([key, c]) => ({ name: c.label, href: FIXED_HREFS[key] }));
+  // All items (fixed + custom) as flat list with resolved group
+  type AllItem = { name: string; href: string; section: "top" | "none" | "dropdown"; group: string; order: number };
 
-  const topCustom = customPages.filter(p => p.menuSection === "top").sort((a, b) => a.menuOrder - b.menuOrder);
-  const institucionalCustom = customPages.filter(p => p.menuSection === "institucional").sort((a, b) => a.menuOrder - b.menuOrder);
-
-  const institucionalItems = [
-    ...fixedInstitucional,
-    ...institucionalCustom.map(p => ({ name: p.menuLabel || p.title, href: `/${p.slug}` })),
+  const allItems: AllItem[] = [
+    ...Object.entries(fixedNavConfigs)
+      .filter(([key]) => FIXED_HREFS[key])
+      .map(([key, c]) => {
+        const group = getDropdownGroup(c.section);
+        return { name: c.label, href: FIXED_HREFS[key], section: (group ? "dropdown" : c.section === "top" ? "top" : "none") as AllItem["section"], group: group ?? "", order: c.order };
+      }),
+    ...customPages.map(p => {
+      const group = getDropdownGroup(p.menuSection);
+      return { name: p.menuLabel || p.title, href: `/${p.slug}`, section: (group ? "dropdown" : p.menuSection === "top" ? "top" : "none") as AllItem["section"], group: group ?? "", order: p.menuOrder };
+    }),
   ];
+
+  const topItems = allItems.filter(i => i.section === "top").sort((a, b) => a.order - b.order);
+
+  // Build dropdown groups: { groupName → sorted items }
+  const dropdownGroups = new Map<string, AllItem[]>();
+  allItems.filter(i => i.section === "dropdown").forEach(i => {
+    if (!dropdownGroups.has(i.group)) dropdownGroups.set(i.group, []);
+    dropdownGroups.get(i.group)!.push(i);
+  });
+  dropdownGroups.forEach(items => items.sort((a, b) => a.order - b.order));
+
+  // Determine insertion order for dropdowns (by min order of their items)
+  const dropdownOrder = Array.from(dropdownGroups.entries())
+    .map(([name, items]) => ({ name, minOrder: Math.min(...items.map(i => i.order)) }))
+    .sort((a, b) => a.minOrder - b.minOrder);
 
   const navLinks: NavItem[] = [
     { name: t.nav.home, href: "/" },
-    ...fixedTop,
-    ...(institucionalItems.length > 0 ? [{
-      name: t.nav.institutional,
-      href: institucionalItems[0]?.href ?? "/transparencia",
-      dropdown: institucionalItems,
-    }] : []),
-    ...topCustom.map(p => ({ name: p.menuLabel || p.title, href: `/${p.slug}` })),
+    ...topItems.map(i => ({ name: i.name, href: i.href })),
+    ...dropdownOrder.map(({ name }) => ({
+      name,
+      href: dropdownGroups.get(name)![0].href,
+      dropdown: dropdownGroups.get(name)!.map(i => ({ name: i.name, href: i.href })),
+    })),
     { name: t.nav.news, href: "/noticias" },
     { name: t.nav.contact, href: "/contato" },
   ];
